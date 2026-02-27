@@ -190,6 +190,9 @@ npm run record
 
 # Run specific test suite (Legal Assistant HomePage tests)
 npm run test:LegalAssistantHomePage
+
+# Run Postman collection API load test
+npm run test:load:postman
 ```
 
 ### Advanced Test Execution
@@ -413,6 +416,65 @@ The Postman collection tests the `/generate` endpoint with data-driven test case
 3. Run collection using Postman Runner
 4. Tests execute automatically with pre-request scripts
 
+### Running Postman-based API Load Test (Playwright)
+
+**Spec file:** `src/tests/postman-api-load.spec.ts`
+
+This load test targets the API request defined in your Postman collection scope:
+- URL: `http://localhost:8000/generate`
+- Method: `POST`
+- Body: `{ "query": "a" }`
+
+SLA assertions in the test:
+- Concurrent users: **50–100**
+- P95 latency: **< 1.5s**
+- Error rate: **< 2%**
+
+```pwsh
+# Example: run with required SLA defaults
+$env:LOAD_CONCURRENCY = "50"
+$env:LOAD_ITERATIONS = "50"
+$env:LOAD_P95_MS = "1500"
+$env:LOAD_MAX_FAILURE_RATE = "0.02"
+$env:LOAD_FAIL_ON_NON_2XX = "true"
+npm run test:load:postman
+```
+
+Optional filters:
+
+```pwsh
+# Change concurrency (must stay between 50 and 100)
+$env:LOAD_CONCURRENCY = "100"
+
+# Override target URL or query when needed
+$env:LOAD_TARGET_URL = "http://localhost:8000/generate"
+$env:LOAD_QUERY = "a"
+```
+
+Load-test environment variables:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `LOAD_TARGET_URL` | API endpoint URL | `http://localhost:8000/generate` |
+| `LOAD_QUERY` | Query payload value in `{ "query": ... }` | `a` |
+| `LOAD_CONCURRENCY` | Number of parallel workers (**50-100**) | `50` |
+| `LOAD_ITERATIONS` | Requests per worker | `50` |
+| `LOAD_P95_MS` | P95 latency threshold in ms | `1500` |
+| `LOAD_MAX_FAILURE_RATE` | Allowed failure ratio (0-1) | `0.02` |
+| `LOAD_FAIL_ON_NON_2XX` | If `true`, non-2xx fails request | `true` |
+| `LOAD_TEST_TIMEOUT_MS` | Playwright test timeout for load test | `300000` |
+
+The load test adds two attachments in the Playwright HTML report:
+- **Load Test Result Summary** (plain-text, easy to read)
+- **API Load Test Summary** (full JSON payload)
+
+The summary includes:
+- throughput (RPS)
+- average latency
+- p95 latency
+- status-code distribution
+- failure rate and threshold assertions
+
 ### Response Validation
 
 Expected successful response structure:
@@ -490,8 +552,25 @@ npx playwright show-report
 - Detailed test logs with steps
 - Screenshots on failures
 - Test attachments (result messages, response data)
+- Load test SLA summaries (human-readable + JSON)
 - Execution timeline
 - Filtering and search capabilities
+
+### How to View Load Test Attachments in HTML Report
+
+1. Run the load test:
+   ```pwsh
+   npm run test:load:postman
+   ```
+2. Open the report:
+   ```pwsh
+   npx playwright show-report
+   ```
+3. Click test: **API load test for POST /generate (human-readable)**
+4. Open the **Attachments** section.
+5. Review:
+   - **Load Test Result Summary** (quick readable text)
+   - **API Load Test Summary** (full JSON metrics)
 
 ### Report Location
 
@@ -506,6 +585,15 @@ Each test includes custom attachments:
 
 1. **Result Message:** Expected vs. actual results
 2. **Response Data:** API response structure (JSON)
+
+For `src/tests/postman-api-load.spec.ts`, the HTML report includes:
+
+1. **Load Test Result Summary** (`text/plain`)
+   - Endpoint, concurrency, total/success/failed requests
+   - Failure rate, average latency, p95 latency, throughput
+   - Status distribution and failure-reason distribution
+2. **API Load Test Summary** (`application/json`)
+   - Full machine-readable metrics and thresholds
 
 Example:
 
@@ -700,7 +788,7 @@ npx playwright test
 
 **Project:** AcmeAI Legal Assistant - Test Automation Framework  
 **Repository:** [haris-bbil/AcmeAI_SQA-](https://github.com/haris-bbil/AcmeAI_SQA-)  
-**Maintained by:** BluBird Interactive  
+**Maintained by:** Haris Md Miftahul
 **License:** ISC
 
 
