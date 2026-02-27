@@ -1,0 +1,65 @@
+[
+  {
+    "requirementId": "CORE-VAL-01",
+    "testCaseId": "TC-SQL-01",
+    "description": "All text inputs must reject SQL injection attempts",
+    "expectedResult": "API returns safe error or ignores malicious input",
+    "payload": "' OR 1=1 --",
+    "mode": "query"
+  },
+  {
+    "requirementId": "CORE-VAL-02",
+    "testCaseId": "TC-XSS-01",
+    "description": "Inputs must reject HTML/JS tags",
+    "expectedResult": "API escapes or rejects script tags",
+    "payload": "<script>alert('XSS')</script>",
+    "mode": "query"
+  },
+  {
+    "requirementId": "CORE-VAL-03",
+    "testCaseId": "TC-LEN-01",
+    "description": "Inputs must enforce length limits",
+    "expectedResult": "API rejects with validation error",
+    "payload": "__LONG_A_10000__",
+    "mode": "query"
+  },
+  {
+    "requirementId": "CORE-VAL-04",
+    "testCaseId": "TC-FMT-01",
+    "description": "Inputs must reject unexpected formats",
+    "expectedResult": "API rejects with validation error",
+    "payload": "1234567890",
+    "mode": "query"
+  },
+  {
+    "requirementId": "CORE-VAL-05",
+    "testCaseId": "TC-UNI-01",
+    "description": "Inputs must handle Unicode safely",
+    "expectedResult": "API decodes safely and rejects",
+    "payload": "%3Cscript%3E",
+    "mode": "query"
+  },
+  {
+    "requirementId": "CORE-VAL-06",
+    "testCaseId": "TC-FILE-01",
+    "description": "File uploads must restrict extensions",
+    "expectedResult": "API rejects file",
+    "mode": "upload"
+  },
+  {
+    "requirementId": "CORE-VAL-07",
+    "testCaseId": "TC-SRV-01",
+    "description": "Server-side validation must exist",
+    "expectedResult": "API still rejects input",
+    "payload": "' OR 1=1 --",
+    "mode": "server-validation"
+  },
+  {
+    "requirementId": "CORE-VAL-08",
+    "testCaseId": "TC-ERR-01",
+    "description": "Error messages must be generic",
+    "expectedResult": "API returns \"Invalid input\" without stack trace",
+    "payload": "<script>alert('XSS')</script>",
+    "mode": "query"
+  }
+]
