@@ -1,0 +1,19 @@
+{
+  "testTitle": "Validate search result for the search input = \"a\"",
+  "query": "a",
+  "expectedSummaryText": "Found 10 relevant legal",
+  "expectedResultsCount": 10,
+  "expectedTitles": [
+    "Data Protection and Privacy Act",
+    "Intellectual Property Rights Law",
+    "Employment Standards Act",
+    "Contract Law Basics",
+    "Consumer Protection Regulations",
+    "Environmental Compliance Act",
+    "Cybersecurity Framework",
+    "Corporate Governance Code",
+    "Anti-Money Laundering Law",
+    "Intellectual Property Licensing Agreement Template"
+  ],
+  "expectedResultMessage": "10 search results are found and each result has the correct title"
+}

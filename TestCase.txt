@@ -1,0 +1,10 @@
+| **Requirement ID** | **Requirement Description** | **Test Case ID** | **Test Case Description** | **Expected Result** | **Status** |
+|---------------------|-----------------------------|------------------|---------------------------|---------------------|------------|
+| SEC‑VAL‑01 | All text inputs must reject SQL injection attempts | TC‑SQL‑01 | Submit payload `' OR 1=1 --` in `query` field | API returns safe error or ignores malicious input | Pending |
+| SEC‑VAL‑02 | Inputs must reject HTML/JS tags | TC‑XSS‑01 | Submit `<script>alert('XSS')</script>` in `query` field | API escapes or rejects script tags | Pending |
+| SEC‑VAL‑03 | Inputs must enforce length limits | TC‑LEN‑01 | Submit 10,000 characters in `query` field | API rejects with validation error | Pending |
+| SEC‑VAL‑04 | Inputs must reject unexpected formats | TC‑FMT‑01 | Submit numbers in a text‑only field | API rejects with validation error | Pending |
+| SEC‑VAL‑05 | Inputs must handle Unicode safely | TC‑UNI‑01 | Submit encoded payload `%3Cscript%3E` | API decodes safely and rejects | Pending |
+| SEC‑VAL‑06 | File uploads must restrict extensions | TC‑FILE‑01 | Upload `.exe` file | API rejects file | Pending |
+| SEC‑VAL‑07 | Server‑side validation must exist | TC‑SRV‑01 | Disable client‑side checks, submit invalid payload | API still rejects input | Pending |
+| SEC‑VAL‑08 | Error messages must be generic | TC‑ERR‑01 | Submit invalid payload | API returns “Invalid input” without stack trace | Pending |

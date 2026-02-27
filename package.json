@@ -1,0 +1,28 @@
+{
+  "name": "acmeai_sqa-",
+  "version": "1.0.0",
+  "description": "A robust, scalable, and maintainable end-to-end test automation framework built with **Playwright** and **TypeScript**. This framework follows industry best practices including the **Page Object Model (POM)** pattern and **Data-Driven Testing (DDT)** approach.",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "record": "playwright codegen",
+    "test:LegalAssistantHomePage": "playwright test src/tests/validSearchResult.spec.ts src/tests/homePageSecurityTest.spec.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/haris-bbil/AcmeAI_SQA-.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/haris-bbil/AcmeAI_SQA-/issues"
+  },
+  "homepage": "https://github.com/haris-bbil/AcmeAI_SQA-#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.3.2"
+  }
+}
