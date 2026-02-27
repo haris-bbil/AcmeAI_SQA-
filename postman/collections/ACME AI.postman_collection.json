@@ -1,0 +1,293 @@
+{
+  "info": {
+    "_postman_id": "dcf57706-4ab3-4920-a1d7-21adcd61ac1e",
+    "name": "ACME AI",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "6909601",
+    "_collection_link": "https://go.postman.co/collection/6909601-dcf57706-4ab3-4920-a1d7-21adcd61ac1e?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "http://localhost:8000/generate",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Test case definitions\r",
+              "const TEST_CASES = [\r",
+              "  { id: \"TC-1\", name: \"Empty input\", body: { query: \"\" }, expectedResult: \"BLOCK\" },\r",
+              "  { id: \"TC-2\", name: \"Invalid input (number)\", body: { query: 1 }, expectedResult: \"BLOCK\" },\r",
+              "  { id: \"TC-3\", name: \"Invalid key parameter\", body: { queryyyyy: \"a\" }, expectedResult: \"BLOCK\" },\r",
+              "  {\r",
+              "    id: \"TC-4\",\r",
+              "    name: \"Special characters\",\r",
+              "    body: { query: \"|; ²³~ @\\\\´ ©«» ¤¼× {} abc def ghi\" },\r",
+              "    expectedResult: \"ALLOW\",\r",
+              "  },\r",
+              "  { id: \"TC-5\", name: \"Missing input value\", body: {}, expectedResult: \"BLOCK\" },\r",
+              "  { id: \"TC-6\", name: \"Valid input returns 200\", body: { query: \"a\" }, expectedResult: \"ALLOW\" },\r",
+              "  { id: \"TC-7\", name: \"Valid input returns 10 documents\", body: { query: \"a\" }, expectedResult: \"ALLOW\" },\r",
+              "  { id: \"TC-8\", name: \"Specific title appears in results\", body: { query: \"a\" }, expectedResult: \"ALLOW\" },\r",
+              "];\r",
+              "\r",
+              "let currentIndex = parseInt(pm.collectionVariables.get(\"tc_index\") || \"0\", 10);\r",
+              "if (Number.isNaN(currentIndex) || currentIndex < 0) currentIndex = 0;\r",
+              "if (currentIndex >= TEST_CASES.length) currentIndex = 0;\r",
+              "\r",
+              "const currentCase = TEST_CASES[currentIndex];\r",
+              "\r",
+              "pm.collectionVariables.set(\"tc_id\", currentCase.id);\r",
+              "pm.collectionVariables.set(\"tc_name\", currentCase.name);\r",
+              "pm.collectionVariables.set(\"tc_expectedResult\", currentCase.expectedResult);\r",
+              "\r",
+              "// Assumes raw JSON body. This overwrites whatever was there.\r",
+              "pm.request.body.update(JSON.stringify(currentCase.body));\r",
+              "\r",
+              "console.log(`[Pre-request] Running: ${currentCase.id} - ${currentCase.name}`);\r",
+              "console.log(`[Pre-request] Expectation: ${currentCase.expectedResult}`);\r",
+              "console.log(`[Pre-request] Body: ${JSON.stringify(currentCase.body)}`);\r",
+              "\r",
+              "const isLastCase = currentIndex === TEST_CASES.length - 1;\r",
+              "\r",
+              "if (isLastCase) {\r",
+              "  pm.collectionVariables.set(\"tc_index\", \"0\");     // reset for next time\r",
+              "  pm.execution.setNextRequest(null);              // stop the runner\r",
+              "} else {\r",
+              "  pm.collectionVariables.set(\"tc_index\", String(currentIndex + 1));\r",
+              "  pm.execution.setNextRequest(pm.info.requestName); // run same request again\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "\r",
+              "const testCaseId = pm.collectionVariables.get(\"tc_id\") || \"UNKNOWN\";\r",
+              "const testCaseName = pm.collectionVariables.get(\"tc_name\") || \"\";\r",
+              "const expectedResult = pm.collectionVariables.get(\"tc_expectedResult\") || \"UNKNOWN\";\r",
+              "\r",
+              "// Simple report line in Test Results\r",
+              "pm.test(\r",
+              "  `[Info] ${testCaseId} - ${testCaseName} (Expected: ${expectedResult})`,\r",
+              "  function () {\r",
+              "    pm.expect(testCaseId).to.be.a(\"string\");\r",
+              "  }\r",
+              ");\r",
+              "\r",
+              "pm.test(\"[Always] Server did not crash (not 5xx)\", function () {\r",
+              "  pm.expect(pm.response.code).to.be.below(500);\r",
+              "});\r",
+              "\r",
+              "let responseJson = null;\r",
+              "try {\r",
+              "  responseJson = pm.response.json();\r",
+              "} catch (e) {\r",
+              "  responseJson = null;\r",
+              "}\r",
+              "\r",
+              "function responseLooksBlocked(statusCode, jsonBody) {\r",
+              "  const successFlag =\r",
+              "    jsonBody && typeof jsonBody.success === \"boolean\" ? jsonBody.success : null;\r",
+              "\r",
+              "  return (statusCode >= 400 && statusCode < 500) || successFlag === false;\r",
+              "}\r",
+              "\r",
+              "function expectAllowedResponseShape(jsonBody) {\r",
+              "  pm.expect(jsonBody).to.be.an(\"object\");\r",
+              "  pm.expect(jsonBody).to.have.property(\"success\");\r",
+              "  pm.expect(jsonBody).to.have.property(\"status\");\r",
+              "  pm.expect(jsonBody).to.have.property(\"data\");\r",
+              "  pm.expect(jsonBody.data).to.have.property(\"summary\");\r",
+              "  pm.expect(jsonBody.data).to.have.property(\"matched_docs\");\r",
+              "  pm.expect(jsonBody.data.matched_docs).to.be.an(\"array\");\r",
+              "}\r",
+              "\r",
+              "if (expectedResult === \"BLOCK\") {\r",
+              "  pm.test(\r",
+              "    `[${testCaseId}] API blocks or refuses the input as expected`,\r",
+              "    function () {\r",
+              "      pm.expect(\r",
+              "        responseLooksBlocked(pm.response.code, responseJson),\r",
+              "        `Expected BLOCK (4xx or success=false), but got status ${pm.response.code}`\r",
+              "      ).to.be.true;\r",
+              "    }\r",
+              "  );\r",
+              "} else if (expectedResult === \"ALLOW\") {\r",
+              "  pm.test(`[${testCaseId}] API accepts the input and returns status 200`, function () {\r",
+              "    pm.expect(pm.response.code).to.eql(200);\r",
+              "  });\r",
+              "\r",
+              "  pm.test(`[${testCaseId}] Response format looks correct`, function () {\r",
+              "    expectAllowedResponseShape(responseJson);\r",
+              "  });\r",
+              "} else {\r",
+              "  pm.test(\r",
+              "    `[${testCaseId}] expectedResult must be set to BLOCK or ALLOW`,\r",
+              "    function () {\r",
+              "      pm.expect([\"BLOCK\", \"ALLOW\"]).to.include(expectedResult);\r",
+              "    }\r",
+              "  );\r",
+              "}\r",
+              "\r",
+              "// -------------------------\r",
+              "// Extra checks for specific test cases\r",
+              "// -------------------------\r",
+              "if (testCaseId === \"TC-7\") {\r",
+              "  pm.test(\"[TC-7] matched_docs contains 10 items\", function () {\r",
+              "    pm.expect(responseJson?.data?.matched_docs?.length).to.eql(10);\r",
+              "  });\r",
+              "}\r",
+              "\r",
+              "if (testCaseId === \"TC-8\") {\r",
+              "  const expectedTitle = \"Intellectual Property Licensing Agreement Template\";\r",
+              "  const docs = responseJson?.data?.matched_docs || [];\r",
+              "\r",
+              "  pm.test(\r",
+              "    \"[TC-8] matched_docs[10].title matches expected (original rule)\",\r",
+              "    function () {\r",
+              "      pm.expect(\r",
+              "        docs.length,\r",
+              "        \"Need at least 10 index to access index 10\"\r",
+              "      ).to.be.above(10);\r",
+              "      pm.expect(docs[10]?.title).to.eql(expectedTitle);\r",
+              "    }\r",
+              "  );\r",
+              "\r",
+              "  pm.test(\"[TC-8 Info] If there are 10 docs, check index 9 instead\", function () {\r",
+              "    if (docs.length === 10) {\r",
+              "      pm.expect(docs[9]?.title).to.eql(expectedTitle);\r",
+              "    } else {\r",
+              "      pm.expect(true).to.be.true;\r",
+              "    }\r",
+              "  });\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "javascript"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8000/generate",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "generate"
+          ]
+        },
+        "description": "Generated from cURL: curl --location 'http://localhost:8000/generate' \\\r\n--header 'Content-Type: application/json' \\\r\n--data '{\r\n    \"query\": \"Data Protection and Privacy Act\"\r\n}'"
+      },
+      "response": []
+    },
+    {
+      "name": "acmeAIDefaultAPI",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"query\": \"a\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8000/generate",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "generate"
+          ]
+        },
+        "description": "Generated from cURL: curl --location 'http://localhost:8000/generate' \\\r\n--header 'Content-Type: application/json' \\\r\n--data '{\r\n    \"query\": \"Data Protection and Privacy Act\"\r\n}'"
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "tc_id",
+      "value": ""
+    },
+    {
+      "key": "tc_name",
+      "value": ""
+    },
+    {
+      "key": "tc_expects4xx",
+      "value": ""
+    },
+    {
+      "key": "tc_index",
+      "value": ""
+    },
+    {
+      "key": "tc_expectedResult",
+      "value": ""
+    }
+  ]
+}
