@@ -7,7 +7,8 @@
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "record": "playwright codegen",
-    "test:LegalAssistantHomePage": "playwright test src/tests/validSearchResult.spec.ts src/tests/homePageSecurityTest.spec.ts"
+    "test:LegalAssistantHomePage": "playwright test src/tests/validSearchResult.spec.ts src/tests/homePageSecurityTest.spec.ts",
+    "test:load:postman": "playwright test src/tests/postman-api-load.spec.ts --workers=1"
   },
   "repository": {
     "type": "git",
