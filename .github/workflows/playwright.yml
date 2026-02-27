@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: Run Playwright Tests
+    name: Run Legal Assistant HomePage Functional and Security Tests
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
