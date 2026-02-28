@@ -1,6 +1,6 @@
 # AcmeAI Legal Assistant - Test Automation Framework
 
-A comprehensive end-to-end test automation framework for the **AcmeAI Legal Assistant** application, built with **Playwright** and **Postman** and **TypeScript**. This framework implements industry best practices including the **Page Object Model (POM)** pattern and **Data-Driven Testing (DDT)** approach, focusing on Api testing, security tesing and core functional testing.
+A comprehensive end-to-end test automation framework for the **AcmeAI Legal Assistant** application, built with **Playwright** and **Postman** and **TypeScript**. This framework implements industry best practices including the **Page Object Model (POM)** pattern and **Data-Driven Testing (DDT)** approach, focusing on Api testing, security testing and core functional testing.
 
 ## 📋 Table of Contents
 
